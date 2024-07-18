@@ -8,6 +8,7 @@ from sqlalchemy import (
     Integer,
     String,
 )
+from typing import Annotated
 
 
 class Base(DeclarativeBase):
@@ -24,5 +25,9 @@ class Base(DeclarativeBase):
         return f'{cls.__name__.lower()}s'
 
 
+string = Annotated[str, mapped_column(String)]
+
 class Cookie(Base):
-    pass
+    session_id: Mapped[str] = mapped_column(String, index=True)
+    access_token: Mapped[string]
+    refresh_token: Mapped[string]
