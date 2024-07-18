@@ -50,10 +50,10 @@ class DataBase:
                 'message': f'User {user.username} has been registered'
             }
             
-    # @staticmethod
+    # @sAsyncSession,
+    # ):taticmethod
     # async def get_users(
-    #     session: AsyncSession,
-    # ):
+    #     session: 
     #     query = select(User).order_by('users.id')
     #     result = await session.execute(query)
     #     return result.scalars().all()
