@@ -14,7 +14,6 @@ class Base(DeclarativeBase):
         Integer,
         primary_key=True,
         autoincrement=True,
-        index=True,
     )
 
     @declared_attr
