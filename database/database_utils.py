@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
     AsyncSession,
+    AsyncEngine,
 )
 from sqlalchemy import select
 from pydantic import BaseModel
@@ -18,29 +19,36 @@ class UserPydantic(BaseModel):
 
 class DataBase:
     def __init__(self):
-        self.engine = create_async_engine(
+        self.engine: AsyncEngine = create_async_engine(
             url=settings.DATABASE_URI,
             echo=True,
         )
-        self.session_factory = async_sessionmaker(
+
+    def get_session(self):
+        self.session_factory: AsyncSession = async_sessionmaker(
             bind=self.engine,
             autoflush=False,
             expire_on_commit=False,
         )
+        return self.session_factory()
 
     @staticmethod
     async def insert_user(
         user_in: UserPydantic,
         session: AsyncSession,
     ):
-        async with session() as session:
-            async with session.begin():
-                user = User(**user_in.model_dump())
-                session.add(user)
-                await session.commit()
-                return {
-                    'message': f'User {user.username} has been registered'
-                }
+        # async with session() as session:
+        async with session.begin():
+            user = User(
+                username=user_in.username,
+                password_hash=user_in.password,
+                email=user_in.email,
+            )
+            session.add(user)
+            await session.commit()
+            return {
+                'message': f'User {user.username} has been registered'
+            }
             
     @staticmethod
     async def get_users(
@@ -49,5 +57,15 @@ class DataBase:
         query = select(User).order_by('users.id')
         result = await session.execute(query)
         return result.scalars().all()
+    
+    @staticmethod
+    async def get_user_by_username(
+        username: str,
+        session: AsyncSession,
+    ):
+        async with session() as session:
+            async with session.begin():
+                result = await session.get(User, username)
+                return result.scalars().all()
 
 db = DataBase()

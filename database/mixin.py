@@ -1,7 +1,6 @@
 from sqlalchemy.orm import (
     declared_attr,
     Mapped,
-    WriteOnlyMapped,
     mapped_column,
     relationship,
 )
@@ -20,8 +19,8 @@ class UserRelationMixin:
     back_populates: str
 
     @declared_attr
-    def user(cls) -> WriteOnlyMapped['User']:
-        return relationship('User', back_populates=cls.back_populates)
+    def user(cls) -> Mapped['User']:
+        return relationship(back_populates=cls.back_populates)
     
     @declared_attr
     def user_id(cls) -> Mapped[Integer]:

@@ -2,12 +2,9 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     relationship,
-    WriteOnlyMapped
 )
 from sqlalchemy import (
-    Integer, 
     String,
-    ForeignKey,
     text,
 )
 from pydantic import EmailStr
@@ -23,8 +20,8 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String)
     email: Mapped[Optional[EmailStr]] = mapped_column(String(128), nullable=True)
 
-    posts: WriteOnlyMapped[list["Post"]] = relationship("Post", back_populates="user")
-    profile: WriteOnlyMapped["Profile"] = relationship("Profile", back_populates="user")
+    posts: Mapped[list["Post"]] = relationship(back_populates="user")
+    profile: Mapped["Profile"] = relationship(back_populates="user")
 
 created_at = Annotated[datetime, mapped_column(server_default=text("TIMEZONE('utc', now())"))]
 
