@@ -6,6 +6,7 @@ from sqlalchemy.orm import (
 from sqlalchemy import (
     String,
     text,
+    LargeBinary,
 )
 from pydantic import EmailStr
 from typing import Optional, Annotated
@@ -17,7 +18,7 @@ from .mixin import UserRelationMixin
 
 class User(Base):
     username: Mapped[str] = mapped_column(String(64), index=True)
-    password_hash: Mapped[str] = mapped_column(String)
+    password_hash: Mapped[bytes] = mapped_column(LargeBinary)
     email: Mapped[Optional[EmailStr]] = mapped_column(String(128), nullable=True)
 
     posts: Mapped[list["Post"]] = relationship(back_populates="user")

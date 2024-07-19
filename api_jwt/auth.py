@@ -16,6 +16,8 @@ def validate_password(
     password_hash_from_db: str,
     password_user: str,
 ):
+    print(f'{password_user}: {type(password_user)}')
+    print(f'{password_hash_from_db}: {type(password_hash_from_db)}')
     password = password_user.encode()
     return bcrypt.checkpw(password, password_hash_from_db)
 
@@ -43,3 +45,5 @@ async def validate_auth_user(
         password_user = user.password,
     ):
         raise unauthed_exc
+    
+    return user_from_db

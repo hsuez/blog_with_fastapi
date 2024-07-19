@@ -5,9 +5,9 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from database import Base
+from models_cookie import Base
 from config import settings
-from database import Cookie # noqa
+from models_cookie import Cookie # noqa
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

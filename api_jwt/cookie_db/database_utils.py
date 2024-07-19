@@ -43,3 +43,5 @@ class DataBaseCookies:
             return {
                 'message': 'Created cookie'
             }
+        
+db_cookie = DataBaseCookies()

@@ -3,12 +3,19 @@ from datetime import (
     datetime,
     timezone,
 )
-from typing import Annotated
+from typing import Annotated, Optional
+from pydantic import BaseModel
 
 from database.database_utils import UserPydantic
 
 import os
 import jwt
+import uuid
+
+
+class User_name_email(BaseModel):
+    username: str
+    email: Optional[str] = None
 
 
 TYPE_TOKEN: str = 'type'
@@ -18,11 +25,15 @@ EXP_ACCESS_TOKEN: int = 15  # 15 minutes
 EXP_REFRESH_TOKEN: int = 30  # 30 days
 algorithm: str = 'RS256'
 
+def generate_session_id() -> str:
+    return uuid.uuid4().hex
+
+
 def create_access_token(
-    payload: UserPydantic,
+    payload: User_name_email,
     expires_delta: timedelta = timedelta(minutes=EXP_ACCESS_TOKEN),
     private_key_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jwt_private.pem'),
-):
+) -> str:
     with open(private_key_path, 'r') as f:
         private_key = f.read()
 
@@ -37,10 +48,10 @@ def create_access_token(
 
 
 def create_refresh_token(
-    payload: UserPydantic,
+    payload: User_name_email,
     expires_delta: timedelta = timedelta(days=EXP_REFRESH_TOKEN),
     private_key_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jwt_private.pem'),
-):
+) -> str:
     with open(private_key_path, 'r') as f:
         private_key = f.read()
 

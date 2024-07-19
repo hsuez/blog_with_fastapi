@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy import select
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 
 from config import settings
 from . import User
@@ -14,7 +14,7 @@ from . import User
 
 class UserPydantic(BaseModel):
     username: str
-    password: str
+    password: Union[str, bytes]
     email: Optional[str] = None
 
 class DataBase:
@@ -51,7 +51,7 @@ class DataBase:
             }
             
     # @sAsyncSession,
-    # ):taticmethod
+    # ):staticmethod
     # async def get_users(
     #     session: 
     #     query = select(User).order_by('users.id')
