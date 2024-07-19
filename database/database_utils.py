@@ -8,14 +8,19 @@ from sqlalchemy import select
 from pydantic import BaseModel
 from typing import Optional, Union
 
-from config import settings
-from . import User
+from db_config.config import settings
+from . import User, Cookie
 
 
 class UserPydantic(BaseModel):
     username: str
     password: Union[str, bytes]
     email: Optional[str] = None
+
+class CookiePydantic(BaseModel):
+    session_id: str
+    access_token: str
+    refresh_token: str
 
 class DataBase:
     def __init__(self):
@@ -30,15 +35,15 @@ class DataBase:
             autoflush=False,
             expire_on_commit=False,
         )
-        return self.session_factory()
+        return self.session_factory
 
+    # interaction with users database
     @staticmethod
     async def insert_user(
         user_in: UserPydantic,
         session: AsyncSession,
     ):
-        # async with session() as session:
-        async with session.begin():
+        async with session() as session:
             user = User(
                 username=user_in.username,
                 password_hash=user_in.password,
@@ -50,21 +55,34 @@ class DataBase:
                 'message': f'User {user.username} has been registered'
             }
             
-    # @sAsyncSession,
-    # ):staticmethod
-    # async def get_users(
-    #     session: 
-    #     query = select(User).order_by('users.id')
-    #     result = await session.execute(query)
-    #     return result.scalars().all()
-    
     @staticmethod
     async def get_user_by_username(
         username: str,
         session: AsyncSession,
     ):
-        async with session.begin():
+        async with session() as session:
             query = select(User).filter_by(username=username)
+            result = await session.execute(query)
+            return result.scalars().first()
+        
+    # interaction with cookies database
+    @staticmethod
+    async def create_cookie(
+        session: AsyncSession,
+        cookie: CookiePydantic,
+    ):
+        async with session() as session:
+            cookie = Cookie(**cookie.model_dump())
+            session.add(cookie)
+            await session.commit()
+            
+    @staticmethod
+    async def get_cookie_by_session_id(
+        session_id: str,
+        session: AsyncSession,
+    ):
+        async with session() as session:
+            query = select(Cookie).filter_by(session_id=session_id)
             result = await session.execute(query)
             return result.scalars().first()
 

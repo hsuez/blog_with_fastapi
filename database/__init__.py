@@ -6,9 +6,10 @@ __all__ = [
     'UserRelationMixin',
     'db',
     'UserPydantic',
+    'Cookie',
 ]
 
 from .base import Base
-from .models import User, Post, Profile
+from .models import User, Post, Profile, Cookie
 from .mixin import UserRelationMixin
 from .database_utils import db, UserPydantic

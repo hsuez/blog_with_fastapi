@@ -41,3 +41,10 @@ class Profile(UserRelationMixin, Base):
     name: Mapped[str_64]
     surname: Mapped[str_64]
     created_at: Mapped[created_at]
+
+string = Annotated[str, mapped_column(String)]
+
+class Cookie(Base):
+    session_id: Mapped[str] = mapped_column(String, index=True)
+    access_token: Mapped[string]
+    refresh_token: Mapped[string]

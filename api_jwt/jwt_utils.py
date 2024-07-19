@@ -3,10 +3,11 @@ from datetime import (
     datetime,
     timezone,
 )
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated, Optional
 from pydantic import BaseModel
 
-from database.database_utils import UserPydantic
+from database.database_utils import UserPydantic, db
 
 import os
 import jwt
@@ -64,3 +65,17 @@ def create_refresh_token(
     }
     encoded = jwt.encode(payload=payload, key=private_key, algorithm=algorithm)
     return encoded
+
+async def validate_access_token(
+    session: AsyncSession,
+    session_id: str,
+):
+    cookie_from_db = await db.get_cookie_by_session_id(
+        session_id=session_id,
+        session=session
+    )
+    return {
+        'session_id': cookie_from_db.session_id,
+        'access_token': cookie_from_db.access_token,
+        'refresh_token': cookie_from_db.refresh_token,
+    }
