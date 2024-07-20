@@ -24,7 +24,7 @@ COOKIE_SESSION_ID_KEY = 'session_id'
 TYPE_TOKEN: str = 'type'
 TYPE_REFRESH_TOKEN: str ='refresh'
 TYPE_ACCESS_TOKEN: str ='access'
-EXP_ACCESS_TOKEN: int = 10  # 10 minutes
+EXP_ACCESS_TOKEN: int = 10  # 15 minutes
 EXP_REFRESH_TOKEN: int = 30  # 30 days
 algorithm: str = 'RS256'
 
@@ -34,7 +34,7 @@ def generate_session_id() -> str:
 
 def create_access_token(
     payload: User_name_email,
-    expires_delta: timedelta = timedelta(minutes=EXP_ACCESS_TOKEN),
+    expires_delta: timedelta = timedelta(seconds=EXP_ACCESS_TOKEN),
     private_key_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jwt_private.pem'),
 ) -> str:
     with open(private_key_path, 'r') as f:
@@ -52,7 +52,7 @@ def create_access_token(
 
 def create_refresh_token(
     payload: User_name_email,
-    expires_delta: timedelta = timedelta(days=EXP_REFRESH_TOKEN),
+    expires_delta: timedelta = timedelta(seconds=EXP_REFRESH_TOKEN),
     private_key_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'jwt_private.pem'),
 ) -> str:
     with open(private_key_path, 'r') as f:
