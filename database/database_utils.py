@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
     AsyncEngine,
 )
-from sqlalchemy import select
+from sqlalchemy import select, update, delete
 from pydantic import BaseModel
 from typing import Optional, Union
 
@@ -85,5 +85,27 @@ class DataBase:
             query = select(Cookie).filter_by(session_id=session_id)
             result = await session.execute(query)
             return result.scalars().first()
+        
+    @staticmethod
+    async def update_access_token(
+        session: AsyncSession,
+        access_token: str,
+        session_id: str,
+    ):
+        async with session() as session:
+            stmt = update(Cookie).filter_by(session_id=session_id).values(access_token=access_token)
+            await session.execute(stmt)
+            await session.commit()
+
+    @staticmethod
+    async def delete_cookie(
+        session: AsyncSession,
+        session_id: str,
+    ):
+        async with session() as session:
+            stmt = delete(Cookie).filter_by(session_id=session_id)
+            await session.execute(stmt)
+            await session.commit()
+
 
 db = DataBase()

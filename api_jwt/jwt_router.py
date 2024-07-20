@@ -12,13 +12,14 @@ from .jwt_utils import (
     generate_session_id,
     create_access_token,
     create_refresh_token,
-    validate_access_token,
+    get_tokens_from_db,
+    COOKIE_SESSION_ID_KEY,
+    decoded_token,
+    User_name_email,
 )
 from .jwt_utils import User_name_email
 from database.database_utils import CookiePydantic, db
 
-
-COOKIE_SESSION_ID_KEY = 'session_id'
 
 router = APIRouter()
 
@@ -45,22 +46,47 @@ async def auth_user(
         'message': f'User {user.username} has been authenticated'
     }
 
-async def get_session_data(
-    session_id: str = Cookie(alias=COOKIE_SESSION_ID_KEY),
-    session: AsyncSession = Depends(db.get_session)
+@router.get('/authorization/')
+async def authorization_user(
+    session: AsyncSession = Depends(db.get_session),
+    session_id: str = Cookie(alias=COOKIE_SESSION_ID_KEY)
 ):
     if session_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Missing session ID cookie'
+            detail='Missing session ID cookie',
         )
-    return await validate_access_token(
+    tokens = await get_tokens_from_db(
         session=session,
         session_id=session_id,
     )
-
-@router.get('/authorization/')
-async def authorization_user(
-    session_data: dict = Depends(get_session_data),
-):
-    return await session_data()
+    # return dict : {session_id, access_token, refresh_token}
+    try:
+        access_payload = decoded_token(token=tokens['access_token'])
+        return access_payload
+    except:
+        try:
+            # update access token in db if has refresh token
+            refresh_payload = decoded_token(token=tokens['refresh_token'])
+            new_access_token = await create_access_token(
+                payload=User_name_email(username=refresh_payload['username'], email=refresh_payload['email']),
+            )
+            await db.update_access_token(
+                session=session,
+                access_token=new_access_token,
+                session_id=session_id,
+            )
+            return {
+                'message': 'Update access token',
+                'token': new_access_token,
+            }
+        except:
+            # delete cookies from db
+            db.delete_cookie(
+                session=session,
+                session_id=session_id,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail='Invalid access or refresh token',
+            )
